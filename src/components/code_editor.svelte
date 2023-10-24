@@ -4,7 +4,7 @@
     import { EditorState, Compartment } from "@codemirror/state";
     import { javascript } from '@codemirror/lang-javascript';
     import { ascii_bubble_graph } from "../support/store.js";
-
+    // ascii_graph_ai_current
   
     let codeMirror;
 
@@ -23,6 +23,8 @@
         });
     }
   
+    console.log("$ascii_bubble_graph", $ascii_bubble_graph)
+
     onMount(() => {
         codeMirror = new EditorView({
             state: EditorState.create({
@@ -39,21 +41,18 @@
         });
     });
 
-//     $: {
-//     if (codeMirror && $ascii_bubble_graph) {
-//         // Replace the entire content
-//         codeMirror.dispatch({
-//             changes: [{ from: 0, to: codeMirror.state.doc.length, insert: $ascii_bubble_graph }],
-//         });
-//     }
-// }
-
 let isEditorVisible = false;
 
 
 $: {
     isEditorVisible = !!$ascii_bubble_graph;
 }
+
+$: if (isEditorVisible && codeMirror) {
+    codeMirror.focus();
+}
+
+
 
 
 

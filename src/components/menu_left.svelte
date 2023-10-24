@@ -10,6 +10,8 @@
   import { currentJsonToSave } from "../support/store.js";
   import { isLoadNewGraph } from "../support/store.js";
   import { theme } from "../store";  // Import your theme store
+  import { ascii_bubble_graph } from "../support/store.js";
+  
   let strokeColor;
 
   $: 
@@ -51,7 +53,7 @@
     // if (editor) {
       console.log("User Input:", userInput);
       toggleInput(); // Hide the input field after saving
-      saveToLocalStorage("ai_force_graph_app_v1" + userInput, $currentJsonToSave);
+      saveToLocalStorage("ascii_graph_ai_v1" + userInput, $ascii_bubble_graph);
     // }
   }
 
@@ -63,23 +65,11 @@
 
   function toggleLoad() {
   isFileListVisible = !isFileListVisible;
-   saved_files = getMultipleKeysFromLocalStorage("ai_force_graph_app_v1")// .then((data) => {
+   saved_files = getMultipleKeysFromLocalStorage("ascii_graph_ai_v1")// .then((data) => {
 
     console.log(saved_files);
 }
 
-// function toggleLoad() {
-//     isFileListVisible = !isFileListVisible;
-//     saved_files = getMultipleKeysFromLocalStorage("ai_force_graph_app_v1");
-    
-//     // Use map to create a new array with the modified strings
-//     const updated_files = saved_files.map(file => {
-//         // Use replace to remove the substring from each string
-//         return file.replace(/ai_force_graph_app_v1/g, '');
-//     });
-    
-//     console.log(updated_files);
-// }
 
 
 function loadFile(fileId) {
@@ -91,7 +81,8 @@ function loadFile(fileId) {
     isLoadNewGraph.set(true);
     isFileListVisible=!isFileListVisible
     console.log("OPENING INSIDE", $isLoadNewGraph, json_content)
-    currentJsonToSave.set(json_content);
+    // currentJsonToSave.set(json_content);
+    ascii_bubble_graph.set(json_content);
     // isLoadNewGraph.set(false);
 
   }
@@ -112,7 +103,7 @@ function loadFile(fileId) {
       fill="none"
       viewBox="0 0 24 24"
       stroke-width="1.5"
-      stroke={strokeColor} 
+      stroke={isOpen ? "currentColor" : strokeColor}
       style="width: 24px; height: 24px;"
       class="transition-transform transform-gpu"
     >
@@ -169,7 +160,7 @@ function loadFile(fileId) {
                   on:mouseout={() => (hoveredItem = null)}
                   on:click={() => loadFile(file)}
                 >
-                  {file.slice(21)}
+                  {file.slice(17)}
                 </li>
               {/each}
             </ul>

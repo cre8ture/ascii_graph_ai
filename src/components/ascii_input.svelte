@@ -1,6 +1,6 @@
 <script>
     import { fade } from "svelte/transition";
-    import * as d3 from "d3";
+    // import * as d3 from "d3";
     import {
         saveToLocalStorage,
         getFromLocalStorage,
@@ -10,15 +10,15 @@
     // Import the useChat function from the 'ai/svelte' module
     import { useCompletion } from "ai/svelte";
     import { completionStore } from "../support/store"; // Modify the path as per your file structure
-    import { isOutline } from "../support/store.js";
-    import { outline } from "../support/store.js";
-    import { nodeDataDblClicked } from "../support/store.js";
+    // import { isOutline } from "../support/store.js";
+    // import { outline } from "../support/store.js";
+    // import { nodeDataDblClicked } from "../support/store.js";
     import { openAIIsLoading } from "../support/store.js";
     import { completedOutline } from "../support/store.js";
     import { newNodeData } from "../support/store.js";
-    import { isGraph } from "../support/store.js";
-    import { isDeleteNode } from "../support/store.js";
-    import { toast } from "@zerodevx/svelte-toast";
+    // import { isGraph } from "../support/store.js";
+    // import { isDeleteNode } from "../support/store.js";
+    // import { toast } from "@zerodevx/svelte-toast";
     import { isNodeUpdate } from "../support/store.js";
     import { currentJsonToSave } from "../support/store.js";
     import { isLoadNewGraph } from "../support/store.js";
@@ -31,7 +31,7 @@
     let isNewConcept = false;
 
     // let selectedNode = $nodeDataDblClicked
-    let newNodeFromeUser = "";
+    // let newNodeFromeUser = "";
     let currentJson = `
             Technical Skills
              ________|_________
@@ -51,8 +51,11 @@
               Communication  Testing
 `;
     onMount(() => {
-        currentJson = getFromLocalStorage("current_ai_graph");
-
+        currentJson = getFromLocalStorage("ascii_graph_ai_current") || currentJson;
+        console.log("currentJson", currentJson)
+        // console.log("getFromLocalStorage", getFromLocalStorage("ascii_graph_ai_current"))
+        // console.log("getMultipleKeysFromLocalStorage", getMultipleKeysFromLocalStorage("ascii_graph_ai_current"))
+        ascii_bubble_graph.set(currentJson)
         function typeWriter() {
             if (i < asciiArt.length) {
                 document.getElementById("ascii-art").innerHTML +=
@@ -68,20 +71,14 @@
 
     let toggleValue = "off"; // Or whatever your default is
 
-    let processBuffer = "";
-    let jsonStartInit = 0;
     // let jsonStart = 0;
 
     // let jsonEnd = null;
-    const regex = /{[^}]*}/;
-    let updatingANode = false;
-    let nodeToReplace = "";
+    // let nodeToReplace = "";
     // let nodeToExpand = ''
 
     let concept = "";
-    let nodeToUpdate = false;
     // let outline = ''
-    let unsanitizedGraph = ``;
 
     function handleToggleChange(event) {
         // event.detail contains the data emitted from the child component
@@ -90,107 +87,13 @@
         console.log("event", toggleValue);
     }
 
-    // The match() method searches a string for a match against a regular expression,
-    // and returns an array of information or null on a mismatch.
-    function handleCharacter(chunk) {
-        if (chunk.length < 10) {
-            jsonStartInit = 0;
-        }
-        processBuffer = chunk.substring(jsonStartInit);
-        // console.log("processBuffer", jsonStartInit, processBuffer)
-        const matches = processBuffer.match(regex);
-        // console.log("matches", matches)
-        if (matches && matches[0]) {
-            jsonStartInit = chunk.lastIndexOf("}") + 1;
-            const jsonNode = parseJSONString("[" + matches[0] + "]");
-            if (jsonNode.length > 0) {
-                return jsonNode;
-            }
-        }
-    }
-
-    function parseJSONString(inputString) {
-        var jsonObject = [];
-        const regex = /{[^}]*"source"[^}]*"target"[^}]*"value"[^}]*}/g;
-
-        const matches = inputString.match(regex);
-        // console.log("matches", matches)
-        if (matches) {
-            for (const match of matches) {
-                try {
-                    const parsedObject = JSON.parse(match);
-                    jsonObject.push(parsedObject);
-                } catch (error) {
-                    console.error("Error parsing JSON object:", error);
-                }
-            }
-        }
-
-        return jsonObject;
-    }
 
     // Destructure the properties from the useChat function's return value
     const { complete, completion, isLoading, stop } = useCompletion({
         api: endpoint, // "/api/bubble_graph",
         onFinish: (_prompt, completion) => {
-            openAIIsLoading.set(false);
-            // console.log("WOOGLE openAIIsLoading", $openAIIsLoading);
-            if (isNewConcept) {
-                unsanitizedGraph = completion;
-
-                let sanitizedString = parseJSONString(completion);
-                currentJson = sanitizedString;
-
-                isNewConcept = false;
-            } else if (nodeToUpdate) {
-                try {
-                    const newUnsanitizedGraph = completion;
-                    let sanitizedString = parseJSONString(newUnsanitizedGraph);
-                    // newNodeData.set(sanitizedString);
-                    currentJson = sanitizedString;
-                    saveToLocalStorage("current_ai_graph", sanitizedString);
-                } catch (error) {
-                    console.error("Error parsing JSON:", error);
-                }
-                isNewConcept = false;
-                updatingANode = false;
-                nodeToUpdate = false;
-                newNodeData.set("");
-            } else if ($isNodeUpdate) {
-                try {
-                    const newUnsanitizedGraph = completion;
-                    let sanitizedString = parseJSONString(newUnsanitizedGraph);
-                    // newNodeData.set(sanitizedString);
-                    saveToLocalStorage("current_ai_graph", sanitizedString);
-
-                    currentJson = sanitizedString;
-                } catch (error) {
-                    console.error("Error parsing JSON:", error);
-                }
-                isNewConcept = false;
-                nodeToUpdate = false;
-                newNodeData.set("");
-                isNodeUpdate.set(false);
-            } else {
-                completedOutline.set(completion); // make outline
-            }
-
-            // if(isNewConcept || nodeToUpdate)
-            count = 0;
-            jsonStartInit = 0;
-            isNewConcept = false;
-            nodeToUpdate = false;
-            updatingANode = false;
-            // currentJson = completion
-
-            console.log(
-                "isNewConcept, nodeToUpdate",
-                isNewConcept,
-                nodeToUpdate,
-                updatingANode
-            );
-            let sanitizedString = parseJSONString(completion);
-            saveToLocalStorage("current_ai_graph", sanitizedString);
+           
+            saveToLocalStorage("ascii_graph_ai_current", completion);
         },
         onError: (err) => {
             //   toast.error(err.message);
@@ -201,10 +104,9 @@
             //   }
         },
     });
-    // console.log("isLoading", $isLoading)
 
     function handleConcept() {
-        console.log("I am building new concept!!!!", concept);
+        // console.log("I am building new concept!!!!", concept);
         // jsonStartInit = 0;
 
         ascii_bubble_graph.set("");
@@ -215,10 +117,11 @@
         // newNodeData.set("");
 
         // nodeDataDblClicked.set('')
-        if(multiValue === "flow"){
-            complete("flow_graph_320_"+concept)
+        if (multiValue === "flow") {
+            complete("flow_graph_320_" + concept);
+        } else {
+            complete(concept);
         }
-        else {  complete(concept); }
         // var count = 0;
         // completionStore.set(true);
 
@@ -233,116 +136,6 @@
         });
 
         concept = "";
-    }
-
-    async function handleGraphUpdate() {
-        jsonStartInit = 0;
-
-        // nodeToUpdate = true;
-        nodeToUpdate = true;
-
-        complete(newNodeFromeUser);
-        console.log("newNodeFromeUser", $nodeDataDblClicked);
-        var count = 0;
-        // This could be a Svelte store subscription or another method of handling a streaming input.
-        completion.subscribe((value) => {
-            let result = handleCharacter(value);
-
-            if (count === 0) {
-                // currently turned off. make === 0 to turn on
-                // completionStore.set(currentJson);
-                isGraph.set(true);
-                newNodeData.set(currentJson);
-                count++;
-            }
-            if (result) {
-                console.log("res", result);
-                isGraph.set(false);
-                newNodeData.set(result);
-                count++;
-                // saveToLocalStorage("current_ai_graph", currentJson);
-            }
-        });
-    }
-
-    async function handleExpandNode() {
-        jsonStartInit = 0;
-
-        // nodeToUpdate = true;
-        nodeToUpdate = true;
-
-        complete($nodeDataDblClicked);
-        console.log("newNodeFromeUser", $nodeDataDblClicked);
-        var count = 0;
-        // This could be a Svelte store subscription or another method of handling a streaming input.
-        completion.subscribe((value) => {
-            let result = handleCharacter(value);
-
-            if (count === 0) {
-                // currently turned off. make === 0 to turn on
-                // completionStore.set(currentJson);
-                isGraph.set(true);
-                newNodeData.set(currentJson);
-                count++;
-            } else if (result) {
-                // console.log("res", result);
-                isGraph.set(false);
-                if (count === 1 && result[0].source !== $nodeDataDblClicked) {
-                    result.push({
-                        source: $nodeDataDblClicked,
-                        target: result[0].source,
-                    });
-                }
-                newNodeData.set(result);
-                count++;
-                // saveToLocalStorage("current_ai_graph", currentJson);
-            }
-        });
-    }
-
-    async function handleNodeUpdate() {
-        // jsonStartInit = 0;
-
-        isNodeUpdate.set(true);
-        complete($nodeDataDblClicked);
-    }
-
-    function deleteNodeInJson(nodeName, jsonObject) {
-        // Filter the jsonObject to only include items that don't match the specified nodeName
-        return jsonObject.filter(function (item) {
-            return item.source !== nodeName && item.target !== nodeName;
-        });
-    }
-
-    function handleDeleteNode() {
-        currentJson = deleteNodeInJson($nodeDataDblClicked, currentJson);
-        console.log("deleted!");
-        isDeleteNode.set(true);
-        toast.push("Success!", {
-            theme: {
-                "--toastColor": "mintcream",
-                "--toastBackground": "rgba(72,187,120,0.9)",
-                "--toastBarBackground": "#2F855A",
-            },
-        });
-    }
-
-    async function handleOutline() {
-        // endpoint= "/api/outline"
-
-        isOutline.set(true);
-
-        if (unsanitizedGraph) {
-            openAIIsLoading.set(true);
-            // console.log("UNSANITIZED GRAPH", unsanitizedGraph, endpoint);
-            complete("make_outline_320_" + unsanitizedGraph); // make_outline_320_ will tell the api to do outline
-            completion.subscribe((value) => {
-                outline.set(value); // Update the outline store with the new value
-            });
-            // isLoading.subscribe((value) => {
-            //     openAIIsLoading.set(value);
-            concept = "";
-        }
     }
 
     $: {
@@ -374,11 +167,11 @@
 
     afterUpdate(() => {
         currentJsonToSave.set(currentJson);
-        saveToLocalStorage("current_ai_graph", currentJson);
+        saveToLocalStorage("ascii_graph_ai_current", currentJson);
     });
 
-    $:{
-        console.log(multiValue)
+    $: {
+        console.log(multiValue);
     }
 </script>
 
@@ -393,7 +186,7 @@
             <input
                 class="input_ai"
                 bind:value={concept}
-                placeholder="Enter the concept of an idea you want to visualize"
+                placeholder="Enter the concept or an idea you want to visualize"
             />
             <button on:click={handleConcept} class="submit-btn">Submit</button>
         </div>

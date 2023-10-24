@@ -35,7 +35,7 @@ export const POST = (async ({ request }) => {
     // Now, 'cleanPrompt' contains the prompt without the "flow_graph_320_" prefix
     // You can use 'cleanPrompt' in your directive or anywhere else you need the adjusted string
 
-    directiveToApi = `Given this prompt: ${cleanPrompt}, create an ascii flow chart that describes the elements derived from the prompt. The chart should be well-structured, visually engaging, and self-explanatory, with a logical flow from one node to the next.`;
+    directiveToApi = `Given this prompt: ${cleanPrompt}, create a text-based ascii flow chart that describes the elements derived from the prompt. The chart should be well-structured, visually engaging, and self-explanatory, with a logical flow from one node to the next. Only output the textbased flow chart and no description and no apology.`;
 }
  else {
     // The prompt does not start with "make_outline_320_"
